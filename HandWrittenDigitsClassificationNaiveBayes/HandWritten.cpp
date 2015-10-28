@@ -14,6 +14,8 @@ vector<int> pvj_values(10);
 vector<int> pvj_values_for_k(10);
 vector<int> training_labels_k;
 vector<int> testing_labels_k;
+vector<int> testing_labels;
+
 vector<vector<vector<int> > > myMatrix_for_k;
 vector<vector<vector<int> > > testing_data_for_k;
 int likelihoodMatrix_for_k[10][28][28];
@@ -49,6 +51,13 @@ void calculate_pvj_values(const string &fname){
      **/
 }
 
+void read_testing_labels(const string &fname){
+    ifstream read(fname.c_str());
+    int t;
+    while (read >> t ) {
+        testing_labels.push_back(t);
+    }
+}
 
 void calculate_pvj_values_for_k(const string &fname){
     ifstream read(fname.c_str());
@@ -323,7 +332,7 @@ double predict_and_calc_accuracy(int k){
                     sum = sum + p_val;
                 }
             }
-            
+            sum = sum + log(pvj_values_for_k[c]/4000.0);
             if (sum > max) {
                 max = sum;
                 max_index = c;
@@ -351,6 +360,14 @@ int main(){
     
     read_testing_data("testimages");
     
+    read_testing_labels("testlabels");
+    
+    /**
+    cout << "Printing testing labels" << endl;
+    for (int jj = 0; jj<10; jj++) {
+        cout << testing_labels[jj] << endl;
+    }
+     **/
     // first we do for 1 test image
     
     
@@ -363,6 +380,9 @@ int main(){
     //cout << pvj_values_for_k.size() << endl;
     
     read_training_data_for_k("trainingimages");
+    
+    
+    
     
     //read_testing_data_for_k("trainingimages");
     
@@ -382,16 +402,20 @@ int main(){
             max_accu_k = k;
         }
     }
-     **/
-    //cout << "max accu k = "<< max_accu_k << endl;
     
-    laplace_k = 4;
+    cout << "max accu k = "<< max_accu_k << endl;
+**/
+    
+    laplace_k = 1;
     
     //cout << testing_data.size() << endl;
     
     ofstream myfile;
     myfile.open ("testlabels_1.txt");
-
+    
+    
+    double testing_accuracy_sum = 0.0;
+    
     for (int tt = 0; tt<1000; tt++) {
         
         
@@ -433,16 +457,22 @@ int main(){
                     sum = sum + p_val;
                 }
             }
-            
+            sum = sum+log(pvj_values[c]/5000.0);
             if (sum > max) {
                 max = sum;
                 max_index = c;
             }
         }
         //cout << max_index << endl;
+        if (max_index == testing_labels[tt]) {
+            testing_accuracy_sum++;
+        }
+        
         myfile << tt+1 << " " << max_index << endl;
         
     }
     myfile.close();
+    
+    cout << "Testing Accuracy = " << testing_accuracy_sum/10.0 << endl;
     return 0;
 }
